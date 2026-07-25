@@ -26,7 +26,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_paywall_hero"
+                android:background="@drawable/bg_license_hero"
                 android:padding="28dp">
 
                 <LinearLayout
