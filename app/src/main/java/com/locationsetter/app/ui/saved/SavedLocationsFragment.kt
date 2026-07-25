@@ -1,17 +1,22 @@
 package com.locationsetter.app.ui.saved
 
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.locationsetter.app.LocationSetterApp
 import com.locationsetter.app.R
 import com.locationsetter.app.data.room.LocationEntity
@@ -48,6 +53,7 @@ class SavedLocationsFragment : Fragment() {
         )
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
+        setupSwipeToDelete()
 
         childFragmentManager.setFragmentResultListener(
             RenameLocationDialogFragment.REQUEST_KEY,
@@ -62,10 +68,80 @@ class SavedLocationsFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.locations.collect { locations ->
                     adapter.submitList(locations)
-                    binding.emptyStateText.visibility = if (locations.isEmpty()) View.VISIBLE else View.GONE
+                    binding.emptyStateGroup.visibility = if (locations.isEmpty()) View.VISIBLE else View.GONE
                 }
             }
         }
+    }
+
+    private fun setupSwipeToDelete() {
+        val deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete)?.mutate()?.apply {
+            setTint(ContextCompat.getColor(requireContext(), R.color.md_on_error_container))
+        }
+        val backgroundPaint = Paint().apply {
+            color = ContextCompat.getColor(requireContext(), R.color.md_error_container)
+            isAntiAlias = true
+        }
+        val cornerRadius = resources.displayMetrics.density * 16f
+
+        val callback = object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ) = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.bindingAdapterPosition
+                if (position == RecyclerView.NO_POSITION) return
+                val location = adapter.currentList.getOrNull(position) ?: return
+                // Snap the row back visually now; it's only actually removed from the list (and
+                // from this UI) once the user confirms the delete dialog.
+                adapter.notifyItemChanged(position)
+                confirmDelete(location)
+            }
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                val itemView = viewHolder.itemView
+                if (dX != 0f) {
+                    c.drawRoundRect(
+                        itemView.left.toFloat(),
+                        itemView.top.toFloat(),
+                        itemView.right.toFloat(),
+                        itemView.bottom.toFloat(),
+                        cornerRadius,
+                        cornerRadius,
+                        backgroundPaint
+                    )
+                    deleteIcon?.let { icon ->
+                        val margin = (itemView.height - icon.intrinsicHeight) / 2
+                        val iconTop = itemView.top + margin
+                        val iconBottom = iconTop + icon.intrinsicHeight
+                        if (dX > 0) {
+                            val left = itemView.left + margin
+                            icon.setBounds(left, iconTop, left + icon.intrinsicWidth, iconBottom)
+                        } else {
+                            val right = itemView.right - margin
+                            icon.setBounds(right - icon.intrinsicWidth, iconTop, right, iconBottom)
+                        }
+                        icon.draw(c)
+                    }
+                }
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            }
+        }
+        ItemTouchHelper(callback).attachToRecyclerView(binding.recyclerView)
     }
 
     private fun useLocation(location: LocationEntity) {

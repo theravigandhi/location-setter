@@ -147,12 +147,25 @@
             </LinearLayout>
 
             <TextView
-                android:id="@+id/selected_coordinates_text"
+                android:id="@+id/selected_address_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:visibility="gone"
+                tools:text="1600 Amphitheatre Parkway, Mountain View, CA"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/selected_coordinates_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:text="@string/no_location_selected"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
             <LinearLayout
                 android:layout_width="match_parent"

@@ -22,6 +22,8 @@
     <string name="default_location_name">Saved location</string>
     <string name="location_saved">Location saved</string>
     <string name="select_location_first">Search or long-press the map to pick a location first</string>
+    <string name="search_failed">Search didn\'t return a location — try again</string>
+    <string name="no_browser_available">No browser app found to open checkout</string>
     <string name="setup_banner_text">Device isn\'t configured for mock locations yet</string>
     <string name="setup_banner_action">Fix now</string>
 
@@ -32,7 +34,8 @@
     <string name="action_delete">Delete</string>
 
     <!-- Saved locations -->
-    <string name="no_saved_locations">No saved locations yet. Save a spot from the Map tab.</string>
+    <string name="no_saved_locations_title">No saved locations yet</string>
+    <string name="no_saved_locations">Pick a spot on the Map tab and tap Save to add one here</string>
     <string name="confirm_delete_message">Delete \"%1$s\"?</string>
 
     <!-- Settings -->
@@ -56,7 +59,7 @@
 
     <!-- Paywall / subscription -->
     <string name="paywall_title">Location Setter Pro</string>
-    <string name="paywall_price">$4.99 / month</string>
+    <string name="paywall_price">₹999 / month</string>
     <string name="paywall_tagline">Unlock unlimited mock location sessions</string>
     <string name="paywall_benefit_unlimited">Unlimited mock location sessions</string>
     <string name="paywall_benefit_unlimited_saves">Unlimited saved locations</string>

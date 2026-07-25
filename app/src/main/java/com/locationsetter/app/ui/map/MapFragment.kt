@@ -3,6 +3,7 @@ package com.locationsetter.app.ui.map
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Intent
+import android.location.Geocoder
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -40,6 +41,7 @@ import com.locationsetter.app.util.DeveloperOptionsChecker
 import com.locationsetter.app.util.MockLocationChecker
 import com.locationsetter.app.util.PermissionUtils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -61,13 +63,24 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var currentMarker: com.google.android.gms.maps.model.Marker? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var statusPulseAnimator: ObjectAnimator? = null
+    private var geocodeJob: Job? = null
+    private var suppressCameraRecenter = false
 
     private val autocompleteLauncher =
         registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
-            val data = result.data ?: return@registerForActivityResult
-            val place = Autocomplete.getPlaceFromIntent(data)
-            val latLng = place.latLng ?: return@registerForActivityResult
-            onLocationChosen(latLng.latitude, latLng.longitude, place.name)
+            val data = result.data
+            if (result.resultCode != android.app.Activity.RESULT_OK || data == null) {
+                // User cancelled the search, or it errored out — nothing to do, and importantly
+                // nothing safe to parse from `data` in either case.
+                return@registerForActivityResult
+            }
+            try {
+                val place = Autocomplete.getPlaceFromIntent(data)
+                val latLng = place.latLng ?: return@registerForActivityResult
+                onLocationChosen(latLng.latitude, latLng.longitude, place.name)
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), R.string.search_failed, Toast.LENGTH_SHORT).show()
+            }
         }
 
     override fun onCreateView(
@@ -144,19 +157,67 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun renderSelectedLocation(selected: SelectedLocation?) {
         if (selected == null) {
             binding.selectedCoordinatesText.text = getString(R.string.no_location_selected)
+            binding.selectedAddressText.visibility = View.GONE
+            currentMarker?.remove()
+            currentMarker = null
+            geocodeJob?.cancel()
             return
         }
+
         binding.selectedCoordinatesText.text = getString(
             R.string.coordinates_format,
             selected.latitude,
             selected.longitude
         )
+        if (selected.address != null) {
+            binding.selectedAddressText.text = selected.address
+            binding.selectedAddressText.visibility = View.VISIBLE
+        } else {
+            binding.selectedAddressText.visibility = View.GONE
+            resolveAddressForSelection(selected)
+        }
+
         val latLng = LatLng(selected.latitude, selected.longitude)
-        currentMarker?.remove()
-        currentMarker = googleMap?.addMarker(
-            MarkerOptions().position(latLng).title(selected.label ?: getString(R.string.selected_location))
-        )
-        googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+        val markerTitle = selected.label ?: selected.address ?: getString(R.string.selected_location)
+        val marker = currentMarker
+        if (marker != null) {
+            // Update the existing marker in place rather than remove+recreate, so a marker being
+            // actively dragged doesn't flicker when this re-renders in response to its own drag.
+            marker.position = latLng
+            marker.title = markerTitle
+        } else {
+            currentMarker = googleMap?.addMarker(
+                MarkerOptions().position(latLng).title(markerTitle).draggable(true)
+            )
+        }
+
+        if (suppressCameraRecenter) {
+            suppressCameraRecenter = false
+        } else {
+            googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+        }
+    }
+
+    private fun resolveAddressForSelection(selected: SelectedLocation) {
+        geocodeJob?.cancel()
+        geocodeJob = viewLifecycleOwner.lifecycleScope.launch {
+            val address = withContext(Dispatchers.IO) {
+                try {
+                    if (!Geocoder.isPresent()) return@withContext null
+                    @Suppress("DEPRECATION")
+                    val results = Geocoder(requireContext(), Locale.getDefault())
+                        .getFromLocation(selected.latitude, selected.longitude, 1)
+                    results?.firstOrNull()?.getAddressLine(0)
+                } catch (e: Exception) {
+                    // Geocoding is a best-effort convenience (network/service can fail or be
+                    // unavailable on some devices) — coordinates are already shown regardless.
+                    null
+                }
+            }
+            if (address != null) {
+                viewModel.updateAddressForCurrentSelection(selected.latitude, selected.longitude, address)
+            }
+        }
     }
 
     private fun renderMockStatus(status: com.locationsetter.app.model.MockLocationStatus) {
@@ -287,6 +348,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         map.setOnMapLongClickListener { latLng ->
             viewModel.selectLocation(latLng.latitude, latLng.longitude, null)
         }
+        map.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
+            override fun onMarkerDragStart(marker: com.google.android.gms.maps.model.Marker) = Unit
+            override fun onMarkerDrag(marker: com.google.android.gms.maps.model.Marker) = Unit
+            override fun onMarkerDragEnd(marker: com.google.android.gms.maps.model.Marker) {
+                suppressCameraRecenter = true
+                viewModel.selectLocation(marker.position.latitude, marker.position.longitude, null)
+            }
+        })
         viewModel.selectedLocation.value?.let { renderSelectedLocation(it) }
     }
 

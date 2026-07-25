@@ -15,7 +15,8 @@ import kotlinx.coroutines.launch
 data class SelectedLocation(
     val latitude: Double,
     val longitude: Double,
-    val label: String? = null
+    val label: String? = null,
+    val address: String? = null
 )
 
 class MapViewModel(
@@ -31,6 +32,14 @@ class MapViewModel(
 
     fun selectLocation(latitude: Double, longitude: Double, label: String? = null) {
         _selectedLocation.value = SelectedLocation(latitude, longitude, label)
+    }
+
+    /** Only applies if the selection hasn't moved on to a different point in the meantime. */
+    fun updateAddressForCurrentSelection(latitude: Double, longitude: Double, address: String) {
+        val current = _selectedLocation.value ?: return
+        if (current.latitude == latitude && current.longitude == longitude) {
+            _selectedLocation.value = current.copy(address = address)
+        }
     }
 
     fun saveSelectedLocation(name: String) {

@@ -98,8 +98,16 @@ class PaywallFragment : Fragment() {
     }
 
     private fun openCheckout() {
-        val url = BuildConfig.LEMONSQUEEZY_CHECKOUT_URL
-        CustomTabsIntent.Builder().build().launchUrl(requireContext(), Uri.parse(url))
+        val uri = Uri.parse(BuildConfig.LEMONSQUEEZY_CHECKOUT_URL)
+        try {
+            CustomTabsIntent.Builder().build().launchUrl(requireContext(), uri)
+        } catch (e: Exception) {
+            try {
+                startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, uri))
+            } catch (e2: Exception) {
+                Toast.makeText(requireContext(), R.string.no_browser_available, Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     override fun onDestroyView() {

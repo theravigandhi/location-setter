@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:fillColor="#0061A4"
-        android:pathData="M0,0h108v108h-108z" />
-</vector>
+<!-- Plain <shape>, not a vector: GradientDrawable's <gradient> has been supported since API 1,
+     so this renders identically across every supported OS version, unlike embedding a gradient
+     fill inside a <vector> path (which needs API 24's GradientColor to render correctly). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="135"
+        android:startColor="#0061A4"
+        android:centerColor="#2E5AAC"
+        android:endColor="#5B3FA0" />
+</shape>

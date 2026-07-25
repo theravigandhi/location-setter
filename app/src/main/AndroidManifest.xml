@@ -23,6 +23,20 @@
         android:name="android.hardware.location.gps"
         android:required="false" />
 
+    <!--
+      Required on Android 11+ (API 30) package-visibility rules for the app to be able to see
+      and launch a browser for the subscription checkout page (Custom Tabs). Without this, an
+      implicit browser Intent can fail to resolve even though a browser is installed, throwing
+      ActivityNotFoundException.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
         android:name=".LocationSetterApp"
         android:allowBackup="true"
