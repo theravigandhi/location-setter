@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Location Setter</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_map">Map</string>
+    <string name="nav_saved">Saved</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Map screen -->
+    <string name="search_location_hint">Search a location</string>
+    <string name="no_location_selected">No location selected. Search or long-press the map.</string>
+    <string name="selected_location">Selected location</string>
+    <string name="coordinates_format">%1$.6f, %2$.6f</string>
+    <string name="action_save_location">Save</string>
+    <string name="action_set_mock_location">Set Mock Location</string>
+    <string name="action_stop_mock_location">Stop Mock Location</string>
+    <string name="status_running">Mock Location Running</string>
+    <string name="status_stopped">Mock Location Stopped</string>
+    <string name="last_update_format">Updated %1$s</string>
+    <string name="location_name_hint">Location name</string>
+    <string name="default_location_name">Saved location</string>
+    <string name="location_saved">Location saved</string>
+    <string name="select_location_first">Search or long-press the map to pick a location first</string>
+    <string name="setup_banner_text">Device isn\'t configured for mock locations yet</string>
+    <string name="setup_banner_action">Fix now</string>
+
+    <!-- Shared actions -->
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_delete">Delete</string>
+
+    <!-- Saved locations -->
+    <string name="no_saved_locations">No saved locations yet. Save a spot from the Map tab.</string>
+    <string name="confirm_delete_message">Delete \"%1$s\"?</string>
+
+    <!-- Settings -->
+    <string name="app_version_format">Version %1$s</string>
+    <string name="open_developer_options">Open Developer Options</string>
+    <string name="open_app_settings">Open App Settings</string>
+
+    <!-- Device setup guide -->
+    <string name="device_setup_guide_title">Device Setup Guide</string>
+    <string name="device_setup_guide_subtitle">Check that this device is ready to mock GPS locations</string>
+    <string name="setup_status_ok">Configured</string>
+    <string name="setup_status_missing">Not configured</string>
+    <string name="setup_step1_title">1. Enable Developer Options</string>
+    <string name="setup_step1_instructions">Go to Settings → About phone, then tap "Build number" 7 times until you see "You are now a developer!".</string>
+    <string name="setup_open_developer_options">Open Developer Options</string>
+    <string name="setup_step2_title">2. Select Location Setter as the mock location app</string>
+    <string name="setup_step2_instructions">In Developer Options, scroll to "Select mock location app" and choose Location Setter. This can only be set manually by you — the app cannot do it for you.</string>
+    <string name="setup_step3_title">3. Grant location permission</string>
+    <string name="setup_step3_instructions">Location Setter needs the "Allow all the time" or "While using the app" location permission to publish mock coordinates.</string>
+    <string name="setup_open_app_settings">Open App Settings</string>
+
+    <!-- Notification -->
+    <string name="notification_title">Location Setter</string>
+    <string name="notification_coordinates_format">Mocking %1$.6f, %2$.6f</string>
+    <string name="notification_channel_name">Mock location service</string>
+    <string name="notification_channel_description">Shows when Location Setter is actively publishing a mock GPS location</string>
+</resources>

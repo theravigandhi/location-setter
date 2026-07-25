@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mapFragment">
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.locationsetter.app.ui.map.MapFragment"
+        android:label="@string/nav_map"
+        tools:layout="@layout/fragment_map">
+        <argument
+            android:name="argLatitude"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="argLongitude"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="argLabel"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <action
+            android:id="@+id/action_map_to_deviceSetupGuide"
+            app:destination="@id/deviceSetupGuideFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/savedLocationsFragment"
+        android:name="com.locationsetter.app.ui.saved.SavedLocationsFragment"
+        android:label="@string/nav_saved"
+        tools:layout="@layout/fragment_saved_locations">
+        <action
+            android:id="@+id/action_saved_to_map"
+            app:destination="@id/mapFragment"
+            app:popUpTo="@id/mapFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.locationsetter.app.ui.settings.SettingsFragment"
+        android:label="@string/nav_settings"
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_settings_to_deviceSetupGuide"
+            app:destination="@id/deviceSetupGuideFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/deviceSetupGuideFragment"
+        android:name="com.locationsetter.app.ui.setup.DeviceSetupGuideFragment"
+        android:label="@string/device_setup_guide_title"
+        tools:layout="@layout/fragment_device_setup_guide" />
+
+</navigation>

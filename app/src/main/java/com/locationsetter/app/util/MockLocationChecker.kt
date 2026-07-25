@@ -1,0 +1,52 @@
+package com.locationsetter.app.util
+
+import android.content.Context
+import android.location.LocationManager
+import android.location.provider.ProviderProperties
+
+object MockLocationChecker {
+
+    /**
+     * There is no public getter for "is this app selected as the mock location app" in
+     * Developer Options. The only reliable signal is to attempt the real operation and treat
+     * a SecurityException as "not selected". A dedicated probe provider name is used (distinct
+     * from Constants.MOCK_PROVIDER_NAME) so this check never collides with a mock session the
+     * MockLocationService may currently have active.
+     */
+    fun isSelectedAsMockLocationApp(context: Context): Boolean {
+        val locationManager =
+            context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return false
+        return try {
+            addProbeProvider(locationManager)
+            locationManager.setTestProviderEnabled(Constants.PROBE_PROVIDER_NAME, true)
+            true
+        } catch (_: SecurityException) {
+            false
+        } catch (_: IllegalArgumentException) {
+            false
+        } finally {
+            try {
+                locationManager.removeTestProvider(Constants.PROBE_PROVIDER_NAME)
+            } catch (_: Exception) {
+                // Provider was never successfully added; nothing to clean up.
+            }
+        }
+    }
+
+    private fun addProbeProvider(locationManager: LocationManager) {
+        // minSdk is 31 (Android 12), so the ProviderProperties.Builder API is always available.
+        locationManager.addTestProvider(
+            Constants.PROBE_PROVIDER_NAME,
+            ProviderProperties.Builder()
+                .setHasSatelliteRequirement(false)
+                .setHasCellRequirement(false)
+                .setHasNetworkRequirement(false)
+                .setHasAltitudeSupport(true)
+                .setHasSpeedSupport(true)
+                .setHasBearingSupport(true)
+                .setPowerUsage(ProviderProperties.POWER_USAGE_LOW)
+                .setAccuracy(ProviderProperties.ACCURACY_FINE)
+                .build()
+        )
+    }
+}

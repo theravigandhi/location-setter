@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="md_primary">#9ECAFF</color>
+    <color name="md_on_primary">#003258</color>
+    <color name="md_primary_container">#00497D</color>
+    <color name="md_on_primary_container">#D1E4FF</color>
+
+    <color name="md_secondary">#BBC7DB</color>
+    <color name="md_on_secondary">#253140</color>
+    <color name="md_secondary_container">#3B4858</color>
+    <color name="md_on_secondary_container">#D7E3F7</color>
+
+    <color name="md_error">#FFB4AB</color>
+    <color name="md_on_error">#690005</color>
+    <color name="md_error_container">#93000A</color>
+    <color name="md_on_error_container">#FFDAD6</color>
+
+    <color name="md_background">#1A1C1E</color>
+    <color name="md_on_background">#E2E2E6</color>
+    <color name="md_surface">#1A1C1E</color>
+    <color name="md_on_surface">#E2E2E6</color>
+    <color name="md_surface_variant">#43474E</color>
+    <color name="md_on_surface_variant">#C3C7CF</color>
+
+    <color name="md_outline">#8D9199</color>
+    <color name="md_outline_variant">#43474E</color>
+
+    <color name="status_running_bg">#1E3B2A</color>
+    <color name="status_running_fg">#8FD9A5</color>
+    <color name="status_stopped_bg">#2E3238</color>
+    <color name="status_stopped_fg">#C3C7CF</color>
+</resources>
