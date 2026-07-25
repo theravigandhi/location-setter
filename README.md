@@ -82,11 +82,20 @@ build the first time you hit it.
 
 Google Maps SDK (`play-services-maps`), Places SDK, Room + KSP, Navigation Component + Safe Args,
 Lifecycle/ViewModel, Coroutines, Material Components 1.12 (Material 3 XML themes), plus
-Robolectric for the included Room DAO unit test. `compileSdk`/`targetSdk` = 35 (Android 15),
-`minSdk` = 26 (Android 8.0) for broad device compatibility, `targetSdk`/`compileSdk` = 35 (Android 15)
-for the latest platform behavior. Mock-location registration uses a version-gated code path
-(`util/TestProviderCompat.kt`) since the modern `ProviderProperties.Builder` API only exists from
-Android 12 onward — devices on Android 8–11 fall back to the older `addTestProvider` overload.
+Robolectric for the included Room DAO unit test. `compileSdk`/`targetSdk` = 35 (Android 15) for
+the latest platform behavior; `minSdk` = 23 (Android 6.0 Marshmallow) for broad device coverage —
+Android 6.0 is the version that introduced the runtime permission model this app already relies
+on, so it's a natural floor without extra legacy branches. Two things are version-gated below the
+old Android-12 floor:
+- Mock-location registration (`util/TestProviderCompat.kt`) — the modern
+  `ProviderProperties.Builder` API only exists from Android 12 onward, so devices on Android 6–11
+  fall back to the older `addTestProvider` overload.
+- The notification channel (`MockLocationService.createNotificationChannel`) — `NotificationChannel`
+  only exists from Android 8.0 onward and is skipped below that (notifications still work, just
+  without a channel, exactly as Android expects pre-8.0).
+
+A legacy (non-adaptive) launcher icon is also provided at `res/mipmap-anydpi/` for Android 6–7
+devices, since the adaptive-icon format in `res/mipmap-anydpi-v26/` only resolves on Android 8+.
 
 ## Google Maps / Places API key setup
 

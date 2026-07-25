@@ -201,6 +201,8 @@ class MockLocationService : Service() {
     }
 
     private fun createNotificationChannel() {
+        // NotificationChannel is a platform class that only exists from API 26 onward.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(
             Constants.NOTIFICATION_CHANNEL_ID,

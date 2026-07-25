@@ -32,7 +32,7 @@ android {
 
     defaultConfig {
         applicationId = "com.locationsetter.app"
-        minSdk = 26
+        minSdk = 23
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -41,6 +41,20 @@ android {
 
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            // Checked-in on purpose: this is the standard, non-secret Android debug keystore
+            // (password/alias are the universal Android defaults). Pinning it here means every
+            // build — CI or local — signs with the same key, so upgrade installs never fail with
+            // an "app not installed" signature mismatch the way they would with each machine's
+            // own auto-generated ~/.android/debug.keystore.
+            storeFile = rootProject.file("keystore/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {
@@ -53,6 +67,7 @@ android {
         }
         debug {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
