@@ -72,6 +72,12 @@ screen instead.
 `FOREGROUND_SERVICE_LOCATION`, `POST_NOTIFICATIONS`, `INTERNET`. `MockLocationService` declares
 `android:foregroundServiceType="location"`, required on Android 14+.
 
+Also declares `ACCESS_MOCK_LOCATION` — this grants nothing at runtime on API 23+, but its mere
+presence in the manifest is what makes the app show up at all in Settings → Developer options →
+**Select mock location app**. Without it, the OS won't list the app there even though everything
+else (build, install, runtime permissions) is working correctly — easy to mistake for a broken
+build the first time you hit it.
+
 ## Gradle dependencies (see `gradle/libs.versions.toml`)
 
 Google Maps SDK (`play-services-maps`), Places SDK, Room + KSP, Navigation Component + Safe Args,
