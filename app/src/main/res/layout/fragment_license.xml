@@ -45,7 +45,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:text="@string/paywall_title"
+                        android:text="@string/license_title"
                         android:textAppearance="?attr/textAppearanceHeadlineSmall"
                         android:textColor="#FFFFFF"
                         android:textStyle="bold" />
@@ -54,17 +54,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="@string/paywall_tagline"
+                        android:text="@string/license_tagline"
                         android:textAppearance="?attr/textAppearanceBodyMedium"
                         android:textColor="#E6FFFFFF" />
 
                     <TextView
-                        android:id="@+id/price_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="@string/paywall_price"
-                        android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                        android:text="@string/license_price"
+                        android:textAppearance="?attr/textAppearanceHeadlineSmall"
                         android:textColor="#FFFFFF"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -96,30 +95,39 @@
                 android:layout_marginTop="20dp"
                 android:orientation="vertical">
 
-                <include layout="@layout/item_paywall_benefit" android:id="@+id/benefit_1" />
-                <include layout="@layout/item_paywall_benefit" android:id="@+id/benefit_2" />
-                <include layout="@layout/item_paywall_benefit" android:id="@+id/benefit_3" />
-                <include layout="@layout/item_paywall_benefit" android:id="@+id/benefit_4" />
+                <include layout="@layout/item_license_benefit" android:id="@+id/benefit_1" />
+                <include layout="@layout/item_license_benefit" android:id="@+id/benefit_2" />
+                <include layout="@layout/item_license_benefit" android:id="@+id/benefit_3" />
+                <include layout="@layout/item_license_benefit" android:id="@+id/benefit_4" />
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/subscribe_button"
+                android:id="@+id/pay_upi_button"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="24dp"
-                android:text="@string/paywall_subscribe_button"
+                android:text="@string/pay_via_upi_button"
                 android:textSize="16sp"
                 app:cornerRadius="16dp"
                 app:icon="@drawable/ic_star"
                 app:iconGravity="textStart" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/contact_button"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/contact_after_payment_button" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="28dp"
-                android:text="@string/paywall_license_section_title"
+                android:text="@string/license_redeem_section_title"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
 
             <com.google.android.material.textfield.TextInputLayout
@@ -129,7 +137,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="12dp"
-                android:hint="@string/paywall_license_hint">
+                android:hint="@string/license_redeem_hint">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/license_input"
@@ -146,7 +154,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="12dp"
-                android:text="@string/paywall_activate_button" />
+                android:text="@string/license_activate_button" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/verify_button"
@@ -155,7 +163,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="4dp"
-                android:text="@string/paywall_verify_button"
+                android:text="@string/license_refresh_button"
                 android:visibility="gone"
                 tools:visibility="visible" />
 

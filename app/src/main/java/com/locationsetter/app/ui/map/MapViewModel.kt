@@ -2,10 +2,10 @@ package com.locationsetter.app.ui.map
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.locationsetter.app.data.license.LicenseRepository
 import com.locationsetter.app.data.repository.LocationRepository
-import com.locationsetter.app.data.subscription.SubscriptionRepository
+import com.locationsetter.app.model.LicenseState
 import com.locationsetter.app.model.MockLocationStatus
-import com.locationsetter.app.model.SubscriptionState
 import com.locationsetter.app.service.MockLocationStatusHolder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,14 +21,14 @@ data class SelectedLocation(
 
 class MapViewModel(
     private val repository: LocationRepository,
-    private val subscriptionRepository: SubscriptionRepository
+    private val licenseRepository: LicenseRepository
 ) : ViewModel() {
 
     private val _selectedLocation = MutableStateFlow<SelectedLocation?>(null)
     val selectedLocation: StateFlow<SelectedLocation?> = _selectedLocation.asStateFlow()
 
     val mockStatus: StateFlow<MockLocationStatus> = MockLocationStatusHolder.status
-    val subscriptionState: StateFlow<SubscriptionState> = subscriptionRepository.state
+    val licenseState: StateFlow<LicenseState> = licenseRepository.state
 
     fun selectLocation(latitude: Double, longitude: Double, label: String? = null) {
         _selectedLocation.value = SelectedLocation(latitude, longitude, label)
@@ -49,7 +49,13 @@ class MapViewModel(
         }
     }
 
-    fun recordTrialActivation() {
-        subscriptionRepository.recordTrialActivation()
+    /** Consumes a trial use or a paid session, matching whichever the user currently has. */
+    suspend fun consumeSessionOrTrial(): Boolean {
+        return if (licenseState.value.hasRedeemedCode) {
+            licenseRepository.consumeSession()
+        } else {
+            licenseRepository.recordTrialActivation()
+            true
+        }
     }
 }

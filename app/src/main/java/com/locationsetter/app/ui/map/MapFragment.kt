@@ -58,7 +58,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private val viewModel: MapViewModel by viewModels {
         val container = (requireActivity().application as LocationSetterApp).container
-        MapViewModelFactory(container.locationRepository, container.subscriptionRepository)
+        MapViewModelFactory(container.locationRepository, container.licenseRepository)
     }
 
     private var googleMap: GoogleMap? = null
@@ -137,16 +137,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     }
                 }
                 launch {
-                    viewModel.subscriptionState.collect { subscription ->
-                        if (subscription.isSubscribed) {
-                            binding.trialInfoText.visibility = View.GONE
-                        } else {
-                            binding.trialInfoText.visibility = View.VISIBLE
-                            binding.trialInfoText.text = if (subscription.trialActivationsRemaining > 0) {
-                                getString(R.string.paywall_trial_remaining_format, subscription.trialActivationsRemaining)
-                            } else {
-                                getString(R.string.paywall_trial_used_up)
-                            }
+                    viewModel.licenseState.collect { license ->
+                        binding.trialInfoText.visibility = View.VISIBLE
+                        binding.trialInfoText.text = when {
+                            license.hasRedeemedCode && license.canStartMocking ->
+                                getString(R.string.sessions_remaining_format, license.sessionsRemaining)
+                            license.hasRedeemedCode ->
+                                getString(R.string.license_expired_or_exhausted)
+                            license.trialActivationsRemaining > 0 ->
+                                getString(R.string.trial_remaining_format, license.trialActivationsRemaining)
+                            else ->
+                                getString(R.string.trial_used_up)
                         }
                     }
                 }
@@ -332,8 +333,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             Toast.makeText(requireContext(), R.string.select_location_first, Toast.LENGTH_SHORT).show()
             return
         }
-        if (!viewModel.subscriptionState.value.canStartMocking) {
-            findNavController().navigate(R.id.action_map_to_paywall)
+        if (!viewModel.licenseState.value.canStartMocking) {
+            findNavController().navigate(R.id.action_map_to_license)
             return
         }
         viewLifecycleOwner.lifecycleScope.launch {
@@ -347,7 +348,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 return@launch
             }
             binding.setupBanner.visibility = View.GONE
-            viewModel.recordTrialActivation()
+            val consumed = viewModel.consumeSessionOrTrial()
+            if (!consumed) {
+                Toast.makeText(requireContext(), R.string.session_consume_failed, Toast.LENGTH_LONG).show()
+                return@launch
+            }
             startMocking(selected)
         }
     }

@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.google.services)
 }
 
 val localProperties = Properties().apply {
@@ -14,29 +15,25 @@ val localProperties = Properties().apply {
     }
 }
 
-val mapsApiKey: String = (localProperties.getProperty("MAPS_API_KEY")
-    ?: System.getenv("MAPS_API_KEY"))
-    ?: run {
-        val placeholder = "MISSING_MAPS_API_KEY"
-        logger.warn(
-            "WARNING: MAPS_API_KEY not found in local.properties or environment. " +
-                "Maps/Places features will not work until it is provided. " +
-                "See README.md for setup instructions."
-        )
-        placeholder
-    }
+fun configValue(propertyName: String, placeholder: String, purpose: String): String =
+    (localProperties.getProperty(propertyName) ?: System.getenv(propertyName))
+        ?: run {
+            logger.warn(
+                "WARNING: $propertyName not found in local.properties or environment. " +
+                    "$purpose won't work correctly until it is provided. " +
+                    "See README.md for setup instructions."
+            )
+            placeholder
+        }
 
-val lemonSqueezyCheckoutUrl: String = (localProperties.getProperty("LEMONSQUEEZY_CHECKOUT_URL")
-    ?: System.getenv("LEMONSQUEEZY_CHECKOUT_URL"))
-    ?: run {
-        val placeholder = "https://example.lemonsqueezy.com/checkout/buy/MISSING_CHECKOUT_URL"
-        logger.warn(
-            "WARNING: LEMONSQUEEZY_CHECKOUT_URL not found in local.properties or environment. " +
-                "The subscription paywall will not link to a real checkout page until it is " +
-                "provided. See README.md for setup instructions."
-        )
-        placeholder
-    }
+val mapsApiKey: String = configValue("MAPS_API_KEY", "MISSING_MAPS_API_KEY", "Maps/Places features")
+val upiId: String = configValue("UPI_ID", "your-upi-id@bank", "UPI payment button")
+val upiPayeeName: String = configValue("UPI_PAYEE_NAME", "Gandhi Groups", "UPI payment button")
+val contactUrl: String = configValue(
+    "LICENSE_CONTACT_URL",
+    "https://wa.me/910000000000",
+    "the \"contact us after payment\" link"
+)
 
 android {
     namespace = "com.locationsetter.app"
@@ -53,7 +50,9 @@ android {
 
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
-        buildConfigField("String", "LEMONSQUEEZY_CHECKOUT_URL", "\"$lemonSqueezyCheckoutUrl\"")
+        buildConfigField("String", "UPI_ID", "\"$upiId\"")
+        buildConfigField("String", "UPI_PAYEE_NAME", "\"$upiPayeeName\"")
+        buildConfigField("String", "LICENSE_CONTACT_URL", "\"$contactUrl\"")
     }
 
     signingConfigs {
@@ -132,6 +131,7 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
@@ -140,6 +140,10 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.places)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.auth.ktx)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.core.testing)

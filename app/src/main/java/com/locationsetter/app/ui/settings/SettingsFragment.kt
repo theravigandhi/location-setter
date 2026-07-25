@@ -15,7 +15,7 @@ import com.locationsetter.app.BuildConfig
 import com.locationsetter.app.LocationSetterApp
 import com.locationsetter.app.R
 import com.locationsetter.app.databinding.FragmentSettingsBinding
-import com.locationsetter.app.model.SubscriptionState
+import com.locationsetter.app.model.LicenseState
 import kotlinx.coroutines.launch
 
 class SettingsFragment : Fragment() {
@@ -42,7 +42,7 @@ class SettingsFragment : Fragment() {
         }
 
         binding.subscriptionStatusRow.setOnClickListener {
-            findNavController().navigate(R.id.action_settings_to_paywall)
+            findNavController().navigate(R.id.action_settings_to_license)
         }
 
         binding.openDeveloperOptionsRow.setOnClickListener {
@@ -56,25 +56,29 @@ class SettingsFragment : Fragment() {
             startActivity(intent)
         }
 
-        observeSubscriptionState()
+        observeLicenseState()
     }
 
-    private fun observeSubscriptionState() {
-        val subscriptionRepository =
-            (requireActivity().application as LocationSetterApp).container.subscriptionRepository
+    private fun observeLicenseState() {
+        val licenseRepository =
+            (requireActivity().application as LocationSetterApp).container.licenseRepository
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                subscriptionRepository.state.collect { state -> renderSubscriptionStatus(state) }
+                licenseRepository.state.collect { state -> renderLicenseStatus(state) }
             }
         }
     }
 
-    private fun renderSubscriptionStatus(state: SubscriptionState) {
+    private fun renderLicenseStatus(state: LicenseState) {
         binding.subscriptionStatusText.text = when {
-            state.isSubscribed -> getString(R.string.paywall_subscribed_status)
+            state.hasRedeemedCode && state.canStartMocking ->
+                getString(R.string.sessions_remaining_format, state.sessionsRemaining)
+            state.hasRedeemedCode ->
+                getString(R.string.license_expired_or_exhausted)
             state.trialActivationsRemaining > 0 ->
-                getString(R.string.paywall_trial_remaining_format, state.trialActivationsRemaining)
-            else -> getString(R.string.paywall_trial_used_up)
+                getString(R.string.trial_remaining_format, state.trialActivationsRemaining)
+            else ->
+                getString(R.string.trial_used_up)
         }
     }
 

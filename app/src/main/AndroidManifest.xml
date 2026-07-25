@@ -25,15 +25,19 @@
 
     <!--
       Required on Android 11+ (API 30) package-visibility rules for the app to be able to see
-      and launch a browser for the subscription checkout page (Custom Tabs). Without this, an
-      implicit browser Intent can fail to resolve even though a browser is installed, throwing
-      ActivityNotFoundException.
+      and launch a browser (Custom Tabs, for the "contact us" link) and installed UPI apps
+      (PhonePe/GPay/Paytm, for the "Pay via UPI" button). Without this, an implicit Intent can
+      fail to resolve even with a matching app installed, throwing ActivityNotFoundException.
     -->
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="upi" />
         </intent>
     </queries>
 

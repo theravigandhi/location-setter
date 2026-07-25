@@ -21,7 +21,8 @@ object Constants {
     const val DATABASE_NAME: String = "location_setter.db"
 
     const val FREE_TRIAL_ACTIVATIONS: Int = 3
-    const val SUBSCRIPTION_PREFS_NAME: String = "subscription_state"
-    const val LEMONSQUEEZY_VALIDATE_URL: String = "https://api.lemonsqueezy.com/v1/licenses/validate"
-    const val LEMONSQUEEZY_ACTIVATE_URL: String = "https://api.lemonsqueezy.com/v1/licenses/activate"
+    const val LICENSE_PREFS_NAME: String = "license_state"
+    const val LICENSES_COLLECTION: String = "licenses"
+    const val LICENSE_PERIOD_DAYS: Int = 30
+    const val UPI_PAYMENT_AMOUNT: Int = 999
 }

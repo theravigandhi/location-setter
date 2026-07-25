@@ -33,8 +33,8 @@
             app:popEnterAnim="@anim/nav_pop_enter"
             app:popExitAnim="@anim/nav_pop_exit" />
         <action
-            android:id="@+id/action_map_to_paywall"
-            app:destination="@id/paywallFragment"
+            android:id="@+id/action_map_to_license"
+            app:destination="@id/licenseFragment"
             app:enterAnim="@anim/nav_enter"
             app:exitAnim="@anim/nav_exit"
             app:popEnterAnim="@anim/nav_pop_enter"
@@ -70,8 +70,8 @@
             app:popEnterAnim="@anim/nav_pop_enter"
             app:popExitAnim="@anim/nav_pop_exit" />
         <action
-            android:id="@+id/action_settings_to_paywall"
-            app:destination="@id/paywallFragment"
+            android:id="@+id/action_settings_to_license"
+            app:destination="@id/licenseFragment"
             app:enterAnim="@anim/nav_enter"
             app:exitAnim="@anim/nav_exit"
             app:popEnterAnim="@anim/nav_pop_enter"
@@ -85,9 +85,9 @@
         tools:layout="@layout/fragment_device_setup_guide" />
 
     <fragment
-        android:id="@+id/paywallFragment"
-        android:name="com.locationsetter.app.ui.paywall.PaywallFragment"
-        android:label="@string/paywall_title"
-        tools:layout="@layout/fragment_paywall" />
+        android:id="@+id/licenseFragment"
+        android:name="com.locationsetter.app.ui.license.LicenseFragment"
+        android:label="@string/license_title"
+        tools:layout="@layout/fragment_license" />
 
 </navigation>
