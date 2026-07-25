@@ -23,6 +23,8 @@
     <string name="location_saved">Location saved</string>
     <string name="select_location_first">Search or long-press the map to pick a location first</string>
     <string name="search_failed">Search didn\'t return a location — try again</string>
+    <string name="search_unavailable">Search isn\'t available right now — try again in a moment</string>
+    <string name="search_launch_failed_with_reason">Couldn\'t open search: %1$s</string>
     <string name="no_browser_available">No browser app found to open checkout</string>
     <string name="setup_banner_text">Device isn\'t configured for mock locations yet</string>
     <string name="setup_banner_action">Fix now</string>
@@ -40,6 +42,7 @@
 
     <!-- Settings -->
     <string name="app_version_format">Version %1$s</string>
+    <string name="developed_by">Developed by Gandhi Groups</string>
     <string name="open_developer_options">Open Developer Options</string>
     <string name="open_app_settings">Open App Settings</string>
 

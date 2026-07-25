@@ -3,6 +3,7 @@ package com.locationsetter.app.ui.map
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.location.Geocoder
 import android.os.Bundle
 import android.text.InputType
@@ -32,6 +33,7 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.google.android.material.color.MaterialColors
 import com.locationsetter.app.LocationSetterApp
 import com.locationsetter.app.R
 import com.locationsetter.app.databinding.FragmentMapBinding
@@ -95,9 +97,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (!Places.isInitialized()) {
-            Places.initialize(requireContext().applicationContext, com.locationsetter.app.BuildConfig.MAPS_API_KEY)
-        }
+        initializePlacesIfNeeded()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -225,7 +225,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             binding.statusChip.text = getString(R.string.status_running)
             binding.statusChip.setBackgroundResource(R.drawable.bg_status_chip_running)
             binding.statusChip.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_running_fg))
+            binding.statusAccentBar.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.status_running_fg))
             binding.setMockLocationButton.text = getString(R.string.action_stop_mock_location)
+            binding.setMockLocationButton.backgroundTintList = ColorStateList.valueOf(
+                MaterialColors.getColor(binding.setMockLocationButton, com.google.android.material.R.attr.colorError)
+            )
+            binding.setMockLocationButton.setTextColor(
+                MaterialColors.getColor(binding.setMockLocationButton, com.google.android.material.R.attr.colorOnError)
+            )
             val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(status.lastUpdateMillis)
             binding.lastUpdateText.text = getString(R.string.last_update_format, time)
             binding.lastUpdateText.visibility = View.VISIBLE
@@ -234,7 +241,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             binding.statusChip.text = getString(R.string.status_stopped)
             binding.statusChip.setBackgroundResource(R.drawable.bg_status_chip_stopped)
             binding.statusChip.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_stopped_fg))
+            binding.statusAccentBar.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.status_stopped_fg))
             binding.setMockLocationButton.text = getString(R.string.action_set_mock_location)
+            binding.setMockLocationButton.backgroundTintList = ColorStateList.valueOf(
+                MaterialColors.getColor(binding.setMockLocationButton, com.google.android.material.R.attr.colorPrimary)
+            )
+            binding.setMockLocationButton.setTextColor(
+                MaterialColors.getColor(binding.setMockLocationButton, com.google.android.material.R.attr.colorOnPrimary)
+            )
             binding.lastUpdateText.visibility = View.GONE
             stopStatusPulse()
         }
@@ -255,11 +269,31 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         binding.statusChip.alpha = 1f
     }
 
+    private fun initializePlacesIfNeeded() {
+        if (Places.isInitialized()) return
+        try {
+            Places.initialize(requireContext().applicationContext, com.locationsetter.app.BuildConfig.MAPS_API_KEY)
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Places.initialize failed", e)
+        }
+    }
+
     private fun launchAutocomplete() {
-        val fields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
-        val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
-            .build(requireContext())
-        autocompleteLauncher.launch(intent)
+        try {
+            if (!Places.isInitialized()) {
+                Toast.makeText(requireContext(), R.string.search_unavailable, Toast.LENGTH_LONG).show()
+                return
+            }
+            val fields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
+            val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                .build(requireContext())
+            autocompleteLauncher.launch(intent)
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "launchAutocomplete failed", e)
+            val message = e.message?.let { getString(R.string.search_launch_failed_with_reason, it) }
+                ?: getString(R.string.search_failed)
+            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun onLocationChosen(latitude: Double, longitude: Double, label: String?) {
@@ -382,5 +416,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         statusPulseAnimator = null
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val TAG = "MapFragment"
     }
 }

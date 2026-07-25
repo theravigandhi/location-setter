@@ -101,6 +101,11 @@ devices, since the adaptive-icon format in `res/mipmap-anydpi-v26/` only resolve
 
 1. In the [Google Cloud Console](https://console.cloud.google.com/), create (or reuse) a
    project, then enable **Maps SDK for Android** and **Places API**.
+   ⚠️ **Enable the classic "Places API," not (only) "Places API (New)."** Google now lists both
+   as separate products in the API Library, and it's easy to enable Maps + "Places API (New)"
+   while missing the classic one — the Places SDK version this app uses (Autocomplete search)
+   specifically needs the classic API. If search crashes or fails to open at all, this is the
+   first thing to check.
 2. Create an API key (Credentials → Create Credentials → API key). Restrict it to Android apps
    with package name `com.locationsetter.app` for production use.
 3. Add it as a GitHub Actions secret named `MAPS_API_KEY`:
