@@ -1,0 +1,50 @@
+rules_version = '2';
+
+// Location Setter license enforcement.
+//
+// The Android app authenticates anonymously (Firebase Auth) before touching Firestore, purely
+// so these rules can require request.auth != null as a baseline (blocks raw unauthenticated REST
+// calls that skip the SDK). It does NOT identify who the customer is - the "licenses/{code}"
+// document ID (the code itself) is the only credential.
+//
+// The admin tool signs in with a real Firebase Auth email/password account (the business
+// owner's), which is how "isAdmin()" below tells an admin request apart from the app's anonymous
+// one.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      // Only the business owner's Firebase Auth account is non-anonymous in this project - the
+      // app only ever signs in anonymously. Swap for a custom-claim check if more than one admin
+      // account is ever needed.
+      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    match /licenses/{code} {
+      // Anyone holding a valid Firebase Auth session (the app's anonymous one, or the admin's)
+      // can read a license document by its exact code - there's no listing/query allowed (see
+      // below), so this only matters if you already know the code.
+      allow get: if request.auth != null;
+
+      // The app is never allowed to list all licenses - only fetch one by its known code.
+      allow list: if false;
+
+      // Only the admin tool creates or fully edits a license (issuing a new code, renewing a
+      // period, deactivating one).
+      allow create, delete: if isAdmin();
+
+      allow update: if isAdmin()
+        || (
+          // The app's one and only permitted write: consume exactly one session, and nothing
+          // else about the document, and only while there's actually quota left and the license
+          // is still active and unexpired.
+          request.auth != null
+          && resource.data.active == true
+          && resource.data.sessionsUsed < resource.data.sessionsAllotted
+          && request.time <= resource.data.periodEnd
+          && request.resource.data.sessionsUsed == resource.data.sessionsUsed + 1
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sessionsUsed'])
+        );
+    }
+  }
+}
