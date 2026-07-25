@@ -10,7 +10,6 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.location.Location
 import android.location.LocationManager
-import android.location.provider.ProviderProperties
 import android.os.Build
 import android.os.IBinder
 import android.os.SystemClock
@@ -20,6 +19,7 @@ import com.locationsetter.app.MainActivity
 import com.locationsetter.app.R
 import com.locationsetter.app.util.Constants
 import com.locationsetter.app.util.PermissionUtils
+import com.locationsetter.app.util.TestProviderCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -114,19 +114,7 @@ class MockLocationService : Service() {
         val manager = locationManager ?: return false
         return try {
             Constants.MOCK_PROVIDER_NAMES.forEach { providerName ->
-                manager.addTestProvider(
-                    providerName,
-                    ProviderProperties.Builder()
-                        .setHasSatelliteRequirement(false)
-                        .setHasCellRequirement(false)
-                        .setHasNetworkRequirement(false)
-                        .setHasAltitudeSupport(true)
-                        .setHasSpeedSupport(true)
-                        .setHasBearingSupport(true)
-                        .setPowerUsage(ProviderProperties.POWER_USAGE_LOW)
-                        .setAccuracy(ProviderProperties.ACCURACY_FINE)
-                        .build()
-                )
+                TestProviderCompat.addTestProvider(manager, providerName)
                 manager.setTestProviderEnabled(providerName, true)
             }
             providersRegistered = true
@@ -153,7 +141,7 @@ class MockLocationService : Service() {
                 speed = 0f
                 time = System.currentTimeMillis()
                 elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     bearingAccuracyDegrees = 0.1f
                     verticalAccuracyMeters = 0.1f
                     speedAccuracyMetersPerSecond = 0.01f

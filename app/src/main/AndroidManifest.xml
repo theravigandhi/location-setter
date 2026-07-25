@@ -44,7 +44,8 @@
         <service
             android:name=".service.MockLocationService"
             android:exported="false"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="location"
+            tools:targetApi="29" />
 
     </application>
 

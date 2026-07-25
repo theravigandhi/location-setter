@@ -2,7 +2,6 @@ package com.locationsetter.app.util
 
 import android.content.Context
 import android.location.LocationManager
-import android.location.provider.ProviderProperties
 
 object MockLocationChecker {
 
@@ -17,7 +16,7 @@ object MockLocationChecker {
         val locationManager =
             context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return false
         return try {
-            addProbeProvider(locationManager)
+            TestProviderCompat.addTestProvider(locationManager, Constants.PROBE_PROVIDER_NAME)
             locationManager.setTestProviderEnabled(Constants.PROBE_PROVIDER_NAME, true)
             true
         } catch (_: SecurityException) {
@@ -31,22 +30,5 @@ object MockLocationChecker {
                 // Provider was never successfully added; nothing to clean up.
             }
         }
-    }
-
-    private fun addProbeProvider(locationManager: LocationManager) {
-        // minSdk is 31 (Android 12), so the ProviderProperties.Builder API is always available.
-        locationManager.addTestProvider(
-            Constants.PROBE_PROVIDER_NAME,
-            ProviderProperties.Builder()
-                .setHasSatelliteRequirement(false)
-                .setHasCellRequirement(false)
-                .setHasNetworkRequirement(false)
-                .setHasAltitudeSupport(true)
-                .setHasSpeedSupport(true)
-                .setHasBearingSupport(true)
-                .setPowerUsage(ProviderProperties.POWER_USAGE_LOW)
-                .setAccuracy(ProviderProperties.ACCURACY_FINE)
-                .build()
-        )
     }
 }

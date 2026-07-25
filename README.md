@@ -77,7 +77,10 @@ screen instead.
 Google Maps SDK (`play-services-maps`), Places SDK, Room + KSP, Navigation Component + Safe Args,
 Lifecycle/ViewModel, Coroutines, Material Components 1.12 (Material 3 XML themes), plus
 Robolectric for the included Room DAO unit test. `compileSdk`/`targetSdk` = 35 (Android 15),
-`minSdk` = 31 (Android 12), matching the spec's supported OS range.
+`minSdk` = 26 (Android 8.0) for broad device compatibility, `targetSdk`/`compileSdk` = 35 (Android 15)
+for the latest platform behavior. Mock-location registration uses a version-gated code path
+(`util/TestProviderCompat.kt`) since the modern `ProviderProperties.Builder` API only exists from
+Android 12 onward — devices on Android 8–11 fall back to the older `addTestProvider` overload.
 
 ## Google Maps / Places API key setup
 
