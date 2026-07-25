@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Location Setter — License Admin</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --primary: #0061A4;
+      --primary-dark: #5B3FA0;
+      --bg: #FDFCFF;
+      --surface: #FFFFFF;
+      --text: #1A1C1E;
+      --muted: #667;
+      --border: #DCE0E6;
+      --error: #BA1A1A;
+      --error-bg: #FFDAD6;
+      --success-bg: #D1E8D5;
+      --success-text: #0F5132;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121316;
+        --surface: #1E2023;
+        --text: #E2E2E6;
+        --muted: #9AA;
+        --border: #3A3D42;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, Roboto, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 480px; margin: 0 auto; padding: 24px 16px 64px; }
+    .hero {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .hero h1 { margin: 0 0 4px; font-size: 20px; }
+    .hero p { margin: 0; opacity: 0.85; font-size: 14px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card h2 { margin: 0 0 14px; font-size: 16px; }
+    label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+    }
+    button {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    button.secondary { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+    button.danger { background: var(--error); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .result {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+      word-break: break-word;
+    }
+    .result.ok { display: block; background: var(--success-bg); color: var(--success-text); }
+    .result.err { display: block; background: var(--error-bg); color: var(--error); }
+    .code-display {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-align: center;
+      padding: 14px;
+      background: var(--success-bg);
+      color: var(--success-text);
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    #app-view { display: none; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .top-bar button { width: auto; margin: 0; padding: 8px 14px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Location Setter — License Admin</h1>
+      <p>Issue and renew customer license codes</p>
+    </div>
+
+    <div id="login-view" class="card">
+      <h2>Sign in</h2>
+      <label for="login-email">Email</label>
+      <input id="login-email" type="email" autocomplete="username" />
+      <label for="login-password">Password</label>
+      <input id="login-password" type="password" autocomplete="current-password" />
+      <button id="login-button">Sign in</button>
+      <div id="login-result" class="result"></div>
+    </div>
+
+    <div id="app-view">
+      <div class="top-bar">
+        <span id="current-user" style="font-size:13px;color:var(--muted);"></span>
+        <button id="signout-button" class="secondary">Sign out</button>
+      </div>
+
+      <div class="card">
+        <h2>Issue a new code</h2>
+        <label for="issue-note">Customer (phone/email, for your reference)</label>
+        <input id="issue-note" type="text" placeholder="e.g. 98765 43210" />
+        <label for="issue-sessions">Sessions this month</label>
+        <input id="issue-sessions" type="number" value="100" min="1" />
+        <button id="issue-button">Generate code</button>
+        <div id="issue-result" class="result"></div>
+      </div>
+
+      <div class="card">
+        <h2>Renew an existing code</h2>
+        <label for="renew-code">Code</label>
+        <input id="renew-code" type="text" placeholder="e.g. 7K9M2XQP" />
+        <label for="renew-sessions">Sessions for the new period</label>
+        <input id="renew-sessions" type="number" value="100" min="1" />
+        <button id="renew-button">Renew</button>
+        <div id="renew-result" class="result"></div>
+      </div>
+
+      <div class="card">
+        <h2>Deactivate a code</h2>
+        <label for="deactivate-code">Code</label>
+        <input id="deactivate-code" type="text" placeholder="e.g. 7K9M2XQP" />
+        <button id="deactivate-button" class="danger">Deactivate</button>
+        <div id="deactivate-result" class="result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -118,49 +118,68 @@ The key is injected at build time into both the manifest's
 `com.google.android.geo.API_KEY` meta-data tag and a `BuildConfig.MAPS_API_KEY` field (used to
 initialize the Places SDK) — see `app/build.gradle.kts`.
 
-## Subscription system (Lemon Squeezy)
+## License system (Firebase-backed, manual UPI payment)
 
-The app monetizes via a monthly subscription gating the "Set Mock Location" action (map
-browsing, search, and saved locations stay free; a 3-use free trial applies before the paywall
-kicks in). Two things drove the design:
+The app monetizes via a monthly session quota gating the "Set Mock Location" action (map
+browsing, search, and saved locations stay free; a 3-use free trial applies before a code is
+needed). Payment is collected **manually via UPI** (PhonePe/GPay/Paytm etc.) — there's no
+in-app checkout. Two things drove this design:
 
-- **Distribution today is a directly-shared APK, not the Play Store.** Google Play Billing only
-  works for apps installed *through* the Play Store, so it's not usable yet. Lemon Squeezy was
-  chosen instead because it works independent of how the APK reaches the device.
-- **No backend server.** Lemon Squeezy's license-key API (`/v1/licenses/activate` and
-  `/v1/licenses/validate`) is public and safe to call directly from the app — there's no secret
-  key to embed or steal out of the APK, unlike a typical payment-API integration.
+- **A session quota that must survive reinstall/app-data-clear can't live only on the phone.**
+  SharedPreferences alone would let anyone reset it back to full by clearing app data, which
+  defeats the entire point of a quota. It needs real state the app doesn't control — Firebase
+  Firestore (Google's free, fully-managed database) plays that role here, with no server for you
+  to run or maintain.
+- **Sharing a code is self-limiting, not something to fight with device-binding.** Since the
+  quota is metered by session *count* with mandatory monthly renewal, two people sharing one code
+  just burn through the shared quota faster — a much more robust deterrent than trying to detect
+  "is this a different person," which is fundamentally unwinnable (device IDs, phone numbers,
+  etc. can all be shared just as easily as the code itself).
 
-**How it works today:** a customer subscribes via a Lemon Squeezy-hosted checkout page (opened in
-a Custom Tab from the paywall screen — no card details ever touch this app), receives a license
-key by email, and enters it in-app to activate. `SubscriptionRepository`
-(`data/subscription/SubscriptionRepository.kt`) persists the license/trial state locally via
-SharedPreferences and is the app's own source of truth for entitlement — `LemonSqueezyApi`
-(`data/subscription/LemonSqueezyApi.kt`) re-verifies it against Lemon Squeezy on demand (the
-paywall's "Refresh subscription status" button) rather than trusting the local flag forever.
+**How it works:** a customer pays you `₹999` via the in-app "Pay via UPI" button (a `upi://` deep
+link straight to their installed payment app — no card/UPI details ever touch this app or a
+server), then messages you (the "Contact us" button) with proof of payment. You open the
+**admin tool** (`admin-tool/`, a static page hosted on Firebase Hosting) on your phone, generate a
+code, and send it to them. They redeem it in-app. `LicenseRepository`
+(`data/license/LicenseRepository.kt`) is the app's read-through cache of the Firestore
+`licenses/{code}` document; **consuming a session runs an atomic Firestore transaction** that
+checks quota/expiry/active-status inside the transaction itself (not just against a local flag),
+enforced further by `firestore.rules` so the app can only ever increment its own `sessionsUsed`
+by exactly one and can never touch `sessionsAllotted`, `periodEnd`, or reset usage downward —
+only the admin tool (signed in with your real Firebase account) can do that.
 
 **Setup required on your end** (same shape as the Maps key above — I can't create third-party
 accounts on your behalf):
-1. Create a [Lemon Squeezy](https://www.lemonsqueezy.com/) account and store.
-2. Create a monthly subscription product/variant; Lemon Squeezy issues a license key per purchase
-   automatically (Product settings → enable "License keys").
-3. Copy that product's checkout URL (looks like
-   `https://YOUR-STORE.lemonsqueezy.com/checkout/buy/VARIANT-UUID`).
-4. Add it as a GitHub Actions secret named `LEMONSQUEEZY_CHECKOUT_URL` (or in `local.properties`
-   for local builds, same pattern as `MAPS_API_KEY`).
-5. Update `res/values/strings.xml`'s `paywall_price` string to match your actual price — it's
-   currently a placeholder (`$4.99 / month`).
+1. Create a [Firebase project](https://console.firebase.google.com/) (free Spark plan is enough).
+2. In the project: **Build → Firestore Database → Create database** (start in production mode —
+   `firestore.rules` in this repo supplies the real rules), and **Build → Authentication →
+   Sign-in method → Email/Password** (enable it) plus **Anonymous** (enable it — this is what the
+   Android app itself signs in with; no login screen, fully automatic).
+3. Create one Authentication user (Authentication → Users → Add user) with your own email — this
+   is your admin login for the admin tool.
+4. **Add an Android app** to the Firebase project (⚙️ Project settings → Your apps → Add app →
+   Android), using package name `com.locationsetter.app`. Download the generated
+   `google-services.json` and replace the placeholder file already at `app/google-services.json`
+   in this repo with it (this file is safe to commit — Google's own guidance is that it isn't a
+   secret; real protection comes from `firestore.rules`).
+5. **Add a Web app** too (same "Your apps" section → Add app → Web) — copy its config object into
+   `admin-tool/firebase-config.js` (also safe to commit, same reasoning).
+6. Deploy the Firestore rules and the admin tool: install the [Firebase
+   CLI](https://firebase.google.com/docs/cli) (`npm install -g firebase-tools`), run
+   `firebase login`, update `.firebaserc`'s project ID to your real one, then
+   `firebase deploy --only firestore:rules,hosting` from the repo root. Hosting gives you a
+   stable URL (`https://YOUR-PROJECT.web.app`) to bookmark on your phone for issuing codes.
+7. Set your real UPI ID via GitHub secrets (or `local.properties` for local builds): `UPI_ID`,
+   `UPI_PAYEE_NAME`, and `LICENSE_CONTACT_URL` (e.g. a `https://wa.me/91XXXXXXXXXX` link).
+8. Update `res/values/strings.xml`'s `license_price` string if `₹999 / month · 100 sessions`
+   ever changes, and `Constants.UPI_PAYMENT_AMOUNT`/`FREE_TRIAL_ACTIVATIONS` in
+   `util/Constants.kt` to match.
 
-**Known limitation, honestly stated:** with no backend, entitlement is ultimately checked
-client-side — a sufficiently motivated user could repackage the APK to bypass the check. This is
-an inherent tradeoff of the "no backend, direct distribution" constraint, not a bug; it can be
-hardened later with a small backend that owns the source of truth if piracy becomes a real
-problem. It's also worth knowing before investing further here: Google Play's developer policy
-has periodically removed mock-location apps in policy sweeps even when built as legitimate
-developer/QA tools, so **Play Store publication of a monetized fake-GPS app is not guaranteed to
-be approved or stay listed** — worth weighing before betting the business on that channel. When/if
-you do move to Play Store distribution, this Lemon Squeezy integration would need to be swapped
-for Google Play Billing, since Play policy requires it for in-app digital subscriptions.
+**Known limitation, honestly stated:** Google Play's developer policy has periodically removed
+mock-location apps in policy sweeps even when built as legitimate developer/QA tools, so **Play
+Store publication of a monetized fake-GPS app is not guaranteed to be approved or stay listed** —
+worth weighing before betting the business on that channel. Direct APK distribution (what this is
+built for today) doesn't have that risk.
 
 ## Build & run guide
 

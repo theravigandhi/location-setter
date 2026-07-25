@@ -25,7 +25,7 @@ coroutinesTest = "1.8.1"
 robolectric = "4.13"
 androidxTestCore = "1.6.1"
 googleServices = "4.5.0"
-firebaseBom = "34.16.0"
+firebaseBom = "33.16.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
