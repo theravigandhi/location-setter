@@ -27,7 +27,18 @@
             android:defaultValue="@null" />
         <action
             android:id="@+id/action_map_to_deviceSetupGuide"
-            app:destination="@id/deviceSetupGuideFragment" />
+            app:destination="@id/deviceSetupGuideFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
+        <action
+            android:id="@+id/action_map_to_paywall"
+            app:destination="@id/paywallFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
     </fragment>
 
     <fragment
@@ -39,7 +50,11 @@
             android:id="@+id/action_saved_to_map"
             app:destination="@id/mapFragment"
             app:popUpTo="@id/mapFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
     </fragment>
 
     <fragment
@@ -49,7 +64,18 @@
         tools:layout="@layout/fragment_settings">
         <action
             android:id="@+id/action_settings_to_deviceSetupGuide"
-            app:destination="@id/deviceSetupGuideFragment" />
+            app:destination="@id/deviceSetupGuideFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
+        <action
+            android:id="@+id/action_settings_to_paywall"
+            app:destination="@id/paywallFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
     </fragment>
 
     <fragment
@@ -57,5 +83,11 @@
         android:name="com.locationsetter.app.ui.setup.DeviceSetupGuideFragment"
         android:label="@string/device_setup_guide_title"
         tools:layout="@layout/fragment_device_setup_guide" />
+
+    <fragment
+        android:id="@+id/paywallFragment"
+        android:name="com.locationsetter.app.ui.paywall.PaywallFragment"
+        android:label="@string/paywall_title"
+        tools:layout="@layout/fragment_paywall" />
 
 </navigation>

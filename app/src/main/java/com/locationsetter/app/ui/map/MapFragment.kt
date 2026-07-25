@@ -1,5 +1,7 @@
 package com.locationsetter.app.ui.map
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
@@ -51,12 +53,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private val navArgs: MapFragmentArgs by navArgs()
 
     private val viewModel: MapViewModel by viewModels {
-        MapViewModelFactory((requireActivity().application as LocationSetterApp).container.locationRepository)
+        val container = (requireActivity().application as LocationSetterApp).container
+        MapViewModelFactory(container.locationRepository, container.subscriptionRepository)
     }
 
     private var googleMap: GoogleMap? = null
     private var currentMarker: com.google.android.gms.maps.model.Marker? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var statusPulseAnimator: ObjectAnimator? = null
 
     private val autocompleteLauncher =
         registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
@@ -119,6 +123,20 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         renderMockStatus(status)
                     }
                 }
+                launch {
+                    viewModel.subscriptionState.collect { subscription ->
+                        if (subscription.isSubscribed) {
+                            binding.trialInfoText.visibility = View.GONE
+                        } else {
+                            binding.trialInfoText.visibility = View.VISIBLE
+                            binding.trialInfoText.text = if (subscription.trialActivationsRemaining > 0) {
+                                getString(R.string.paywall_trial_remaining_format, subscription.trialActivationsRemaining)
+                            } else {
+                                getString(R.string.paywall_trial_used_up)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -150,13 +168,30 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(status.lastUpdateMillis)
             binding.lastUpdateText.text = getString(R.string.last_update_format, time)
             binding.lastUpdateText.visibility = View.VISIBLE
+            startStatusPulse()
         } else {
             binding.statusChip.text = getString(R.string.status_stopped)
             binding.statusChip.setBackgroundResource(R.drawable.bg_status_chip_stopped)
             binding.statusChip.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_stopped_fg))
             binding.setMockLocationButton.text = getString(R.string.action_set_mock_location)
             binding.lastUpdateText.visibility = View.GONE
+            stopStatusPulse()
         }
+    }
+
+    private fun startStatusPulse() {
+        if (statusPulseAnimator?.isRunning == true) return
+        statusPulseAnimator = ObjectAnimator.ofFloat(binding.statusChip, View.ALPHA, 1f, 0.55f, 1f).apply {
+            duration = 1400
+            repeatCount = ValueAnimator.INFINITE
+            start()
+        }
+    }
+
+    private fun stopStatusPulse() {
+        statusPulseAnimator?.cancel()
+        statusPulseAnimator = null
+        binding.statusChip.alpha = 1f
     }
 
     private fun launchAutocomplete() {
@@ -202,6 +237,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             Toast.makeText(requireContext(), R.string.select_location_first, Toast.LENGTH_SHORT).show()
             return
         }
+        if (!viewModel.subscriptionState.value.canStartMocking) {
+            findNavController().navigate(R.id.action_map_to_paywall)
+            return
+        }
         viewLifecycleOwner.lifecycleScope.launch {
             val configured = withContext(Dispatchers.IO) {
                 DeveloperOptionsChecker.isDeveloperOptionsEnabled(requireContext()) &&
@@ -213,6 +252,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 return@launch
             }
             binding.setupBanner.visibility = View.GONE
+            viewModel.recordTrialActivation()
             startMocking(selected)
         }
     }
@@ -269,6 +309,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onDestroyView() {
+        statusPulseAnimator?.cancel()
+        statusPulseAnimator = null
         super.onDestroyView()
         _binding = null
     }

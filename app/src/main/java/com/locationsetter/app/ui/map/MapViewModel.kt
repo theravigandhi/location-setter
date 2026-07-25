@@ -3,7 +3,9 @@ package com.locationsetter.app.ui.map
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.locationsetter.app.data.repository.LocationRepository
+import com.locationsetter.app.data.subscription.SubscriptionRepository
 import com.locationsetter.app.model.MockLocationStatus
+import com.locationsetter.app.model.SubscriptionState
 import com.locationsetter.app.service.MockLocationStatusHolder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +18,16 @@ data class SelectedLocation(
     val label: String? = null
 )
 
-class MapViewModel(private val repository: LocationRepository) : ViewModel() {
+class MapViewModel(
+    private val repository: LocationRepository,
+    private val subscriptionRepository: SubscriptionRepository
+) : ViewModel() {
 
     private val _selectedLocation = MutableStateFlow<SelectedLocation?>(null)
     val selectedLocation: StateFlow<SelectedLocation?> = _selectedLocation.asStateFlow()
 
     val mockStatus: StateFlow<MockLocationStatus> = MockLocationStatusHolder.status
+    val subscriptionState: StateFlow<SubscriptionState> = subscriptionRepository.state
 
     fun selectLocation(latitude: Double, longitude: Double, label: String? = null) {
         _selectedLocation.value = SelectedLocation(latitude, longitude, label)
@@ -32,5 +38,9 @@ class MapViewModel(private val repository: LocationRepository) : ViewModel() {
         viewModelScope.launch {
             repository.addLocation(name, current.latitude, current.longitude)
         }
+    }
+
+    fun recordTrialActivation() {
+        subscriptionRepository.recordTrialActivation()
     }
 }

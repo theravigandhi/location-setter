@@ -176,6 +176,18 @@
                     android:layout_weight="1"
                     android:text="@string/action_set_mock_location" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/trial_info_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:textAppearance="?attr/textAppearanceLabelMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone"
+                tools:text="2 free session(s) remaining"
+                tools:visibility="visible" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

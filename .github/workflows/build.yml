@@ -17,8 +17,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Write local.properties with Maps API key
-        run: echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> local.properties
+      - name: Write local.properties with secrets
+        run: |
+          echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> local.properties
+          echo "LEMONSQUEEZY_CHECKOUT_URL=${{ secrets.LEMONSQUEEZY_CHECKOUT_URL }}" >> local.properties
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

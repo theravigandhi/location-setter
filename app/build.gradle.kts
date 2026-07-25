@@ -26,6 +26,18 @@ val mapsApiKey: String = (localProperties.getProperty("MAPS_API_KEY")
         placeholder
     }
 
+val lemonSqueezyCheckoutUrl: String = (localProperties.getProperty("LEMONSQUEEZY_CHECKOUT_URL")
+    ?: System.getenv("LEMONSQUEEZY_CHECKOUT_URL"))
+    ?: run {
+        val placeholder = "https://example.lemonsqueezy.com/checkout/buy/MISSING_CHECKOUT_URL"
+        logger.warn(
+            "WARNING: LEMONSQUEEZY_CHECKOUT_URL not found in local.properties or environment. " +
+                "The subscription paywall will not link to a real checkout page until it is " +
+                "provided. See README.md for setup instructions."
+        )
+        placeholder
+    }
+
 android {
     namespace = "com.locationsetter.app"
     compileSdk = 35
@@ -41,6 +53,7 @@ android {
 
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+        buildConfigField("String", "LEMONSQUEEZY_CHECKOUT_URL", "\"$lemonSqueezyCheckoutUrl\"")
     }
 
     signingConfigs {
@@ -106,8 +119,8 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment.ktx)
-    implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.browser)
 
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)

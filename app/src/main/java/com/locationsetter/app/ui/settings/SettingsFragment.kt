@@ -7,10 +7,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.locationsetter.app.BuildConfig
+import com.locationsetter.app.LocationSetterApp
 import com.locationsetter.app.R
 import com.locationsetter.app.databinding.FragmentSettingsBinding
+import com.locationsetter.app.model.SubscriptionState
+import kotlinx.coroutines.launch
 
 class SettingsFragment : Fragment() {
 
@@ -35,6 +41,10 @@ class SettingsFragment : Fragment() {
             findNavController().navigate(R.id.action_settings_to_deviceSetupGuide)
         }
 
+        binding.subscriptionStatusRow.setOnClickListener {
+            findNavController().navigate(R.id.action_settings_to_paywall)
+        }
+
         binding.openDeveloperOptionsRow.setOnClickListener {
             startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
         }
@@ -44,6 +54,27 @@ class SettingsFragment : Fragment() {
                 data = android.net.Uri.fromParts("package", requireContext().packageName, null)
             }
             startActivity(intent)
+        }
+
+        observeSubscriptionState()
+    }
+
+    private fun observeSubscriptionState() {
+        val subscriptionRepository =
+            (requireActivity().application as LocationSetterApp).container.subscriptionRepository
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                subscriptionRepository.state.collect { state -> renderSubscriptionStatus(state) }
+            }
+        }
+    }
+
+    private fun renderSubscriptionStatus(state: SubscriptionState) {
+        binding.subscriptionStatusText.text = when {
+            state.isSubscribed -> getString(R.string.paywall_subscribed_status)
+            state.trialActivationsRemaining > 0 ->
+                getString(R.string.paywall_trial_remaining_format, state.trialActivationsRemaining)
+            else -> getString(R.string.paywall_trial_used_up)
         }
     }
 

@@ -19,4 +19,9 @@ object Constants {
     const val ACTION_STOP_MOCKING: String = "com.locationsetter.app.action.STOP_MOCKING"
 
     const val DATABASE_NAME: String = "location_setter.db"
+
+    const val FREE_TRIAL_ACTIVATIONS: Int = 3
+    const val SUBSCRIPTION_PREFS_NAME: String = "subscription_state"
+    const val LEMONSQUEEZY_VALIDATE_URL: String = "https://api.lemonsqueezy.com/v1/licenses/validate"
+    const val LEMONSQUEEZY_ACTIVATE_URL: String = "https://api.lemonsqueezy.com/v1/licenses/activate"
 }

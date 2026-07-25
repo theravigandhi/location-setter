@@ -113,6 +113,50 @@ The key is injected at build time into both the manifest's
 `com.google.android.geo.API_KEY` meta-data tag and a `BuildConfig.MAPS_API_KEY` field (used to
 initialize the Places SDK) — see `app/build.gradle.kts`.
 
+## Subscription system (Lemon Squeezy)
+
+The app monetizes via a monthly subscription gating the "Set Mock Location" action (map
+browsing, search, and saved locations stay free; a 3-use free trial applies before the paywall
+kicks in). Two things drove the design:
+
+- **Distribution today is a directly-shared APK, not the Play Store.** Google Play Billing only
+  works for apps installed *through* the Play Store, so it's not usable yet. Lemon Squeezy was
+  chosen instead because it works independent of how the APK reaches the device.
+- **No backend server.** Lemon Squeezy's license-key API (`/v1/licenses/activate` and
+  `/v1/licenses/validate`) is public and safe to call directly from the app — there's no secret
+  key to embed or steal out of the APK, unlike a typical payment-API integration.
+
+**How it works today:** a customer subscribes via a Lemon Squeezy-hosted checkout page (opened in
+a Custom Tab from the paywall screen — no card details ever touch this app), receives a license
+key by email, and enters it in-app to activate. `SubscriptionRepository`
+(`data/subscription/SubscriptionRepository.kt`) persists the license/trial state locally via
+SharedPreferences and is the app's own source of truth for entitlement — `LemonSqueezyApi`
+(`data/subscription/LemonSqueezyApi.kt`) re-verifies it against Lemon Squeezy on demand (the
+paywall's "Refresh subscription status" button) rather than trusting the local flag forever.
+
+**Setup required on your end** (same shape as the Maps key above — I can't create third-party
+accounts on your behalf):
+1. Create a [Lemon Squeezy](https://www.lemonsqueezy.com/) account and store.
+2. Create a monthly subscription product/variant; Lemon Squeezy issues a license key per purchase
+   automatically (Product settings → enable "License keys").
+3. Copy that product's checkout URL (looks like
+   `https://YOUR-STORE.lemonsqueezy.com/checkout/buy/VARIANT-UUID`).
+4. Add it as a GitHub Actions secret named `LEMONSQUEEZY_CHECKOUT_URL` (or in `local.properties`
+   for local builds, same pattern as `MAPS_API_KEY`).
+5. Update `res/values/strings.xml`'s `paywall_price` string to match your actual price — it's
+   currently a placeholder (`$4.99 / month`).
+
+**Known limitation, honestly stated:** with no backend, entitlement is ultimately checked
+client-side — a sufficiently motivated user could repackage the APK to bypass the check. This is
+an inherent tradeoff of the "no backend, direct distribution" constraint, not a bug; it can be
+hardened later with a small backend that owns the source of truth if piracy becomes a real
+problem. It's also worth knowing before investing further here: Google Play's developer policy
+has periodically removed mock-location apps in policy sweeps even when built as legitimate
+developer/QA tools, so **Play Store publication of a monetized fake-GPS app is not guaranteed to
+be approved or stay listed** — worth weighing before betting the business on that channel. When/if
+you do move to Play Store distribution, this Lemon Squeezy integration would need to be swapped
+for Google Play Billing, since Play policy requires it for in-app digital subscriptions.
+
 ## Build & run guide
 
 1. **Push this project to a GitHub repository** (create one if you don't have it yet) and add

@@ -54,6 +54,24 @@
     <string name="setup_step3_instructions">Location Setter needs the "Allow all the time" or "While using the app" location permission to publish mock coordinates.</string>
     <string name="setup_open_app_settings">Open App Settings</string>
 
+    <!-- Paywall / subscription -->
+    <string name="paywall_title">Location Setter Pro</string>
+    <string name="paywall_price">$4.99 / month</string>
+    <string name="paywall_tagline">Unlock unlimited mock location sessions</string>
+    <string name="paywall_benefit_unlimited">Unlimited mock location sessions</string>
+    <string name="paywall_benefit_unlimited_saves">Unlimited saved locations</string>
+    <string name="paywall_benefit_support">Priority support</string>
+    <string name="paywall_benefit_updates">New features as soon as they ship</string>
+    <string name="paywall_trial_remaining_format">%1$d free session(s) remaining</string>
+    <string name="paywall_trial_used_up">Your free sessions are used up — subscribe to keep going</string>
+    <string name="paywall_subscribed_status">You\'re subscribed — thank you!</string>
+    <string name="paywall_subscribe_button">Subscribe Now</string>
+    <string name="paywall_license_section_title">Already subscribed?</string>
+    <string name="paywall_license_hint">Enter your license key</string>
+    <string name="paywall_activate_button">Activate</string>
+    <string name="paywall_verify_button">Refresh subscription status</string>
+    <string name="paywall_close">Not now</string>
+
     <!-- Notification -->
     <string name="notification_title">Location Setter</string>
     <string name="notification_coordinates_format">Mocking %1$.6f, %2$.6f</string>
