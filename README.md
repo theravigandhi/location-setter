@@ -27,7 +27,7 @@ GitHub, let Actions build it, download the artifact.
 
 One consequence: this repo does **not** include a checked-in `gradle-wrapper.jar` (it's a
 compiled binary that can't be hand-authored, and there was no local Gradle available to generate
-one). CI instead uses `gradle/actions/setup-gradle` to provision Gradle 8.9 directly and runs
+one). CI instead uses `gradle/actions/setup-gradle` to provision Gradle 8.10.2 directly and runs
 `gradle assembleDebug` (not `./gradlew`). If you later set up a machine with Java/Gradle
 installed, you can generate a conventional wrapper yourself with `gradle wrapper` and then use
 `./gradlew` locally too — nothing in the project structure needs to change for that.
